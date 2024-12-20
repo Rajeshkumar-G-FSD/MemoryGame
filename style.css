@@ -107,3 +107,37 @@ p,
   color: var(--dark);
   transform: rotateY(180deg);
 }
+
+/* Responsive styles */
+@media (max-width: 1024px) {
+  .cards-container {
+    margin: 0 10%;
+  }
+
+  .card-container {
+    width: 130px;
+    height: 130px;
+  }
+}
+
+@media (max-width: 768px) {
+  .cards-container {
+    margin: 0 5%;
+  }
+
+  .card-container {
+    width: 100px;
+    height: 100px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cards-container {
+    margin: 0 2%;
+  }
+
+  .card-container {
+    width: 80px;
+    height: 80px;
+  }
+}
