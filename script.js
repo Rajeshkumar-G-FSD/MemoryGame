@@ -1,45 +1,27 @@
+// DOM elements
 const cardsContainer = document.querySelector(".cards-container");
 const score = document.querySelector("#score");
-let allowClicks = true;
-let card1 = null;
-let card2 = null;
-score.innerHTML = 0;
-let cardsFlipped = 0;
+let allowClicks = true; // Control if clicks are allowed
+let card1 = null; // Track first card flipped
+let card2 = null; // Track second card flipped
+score.innerHTML = 0; // Initialize score
+let cardsFlipped = 0; // Track the number of cards flipped
 
+// Array of plant names (duplicates to match pairs)
 const PLANTS = [
-  "plant1",
-  "plant2",
-  "plant3",
-  "plant4",
-  "plant5",
-  "plant6",
-  "plant7",
-  "plant8",
-  "plant1",
-  "plant2",
-  "plant3",
-  "plant4",
-  "plant5",
-  "plant6",
-  "plant7",
-  "plant8",
+  "plant1", "plant2", "plant3", "plant4", "plant5", "plant6", "plant7", "plant8",
+  "plant1", "plant2", "plant3", "plant4", "plant5", "plant6", "plant7", "plant8"
 ];
 
-// here is a helper function to shuffle an array
-// it returns the same array with values shuffled
-// it is based on an algorithm called Fisher Yates if you want ot research more
+// Fisher-Yates shuffle function to randomize the array
 function shuffle(array) {
   let counter = array.length;
 
   // While there are elements in the array that haven't been shuffled
   while (counter > 0) {
-    // Pick a random index
-    let index = Math.floor(Math.random() * counter);
-
-    // Decrease counter by 1
-    counter--;
-
-    // And swap the last element with it
+    let index = Math.floor(Math.random() * counter); // Pick a random index
+    counter--; // Decrease counter
+    // Swap the last element with the randomly chosen one
     let temp = array[counter];
     array[counter] = array[index];
     array[index] = temp;
@@ -48,100 +30,101 @@ function shuffle(array) {
   return array;
 }
 
+// Shuffle the PLANTS array
 let shuffledPlants = shuffle(PLANTS);
 console.log(shuffledPlants);
 
-// this function loops over the array of colors
-// it creates a new div and gives it a class with the value of the color
-// it also adds an event listener for a click for each card
+// Function to create the card elements and append them to the container
 function createDivsForPlants(plantArray) {
-  for (let plant of plantArray) {
-    // create new elements that will build the card
+  plantArray.forEach(plant => {
+    // Create divs for the card layout
     const cardContainer = document.createElement("div");
     const card = document.createElement("figure");
     const cardFront = document.createElement("div");
     const cardBack = document.createElement("div");
     const cardImg = document.createElement("img");
 
-    // give elements class attributes
-    cardContainer.classList.add("card-container");
-    cardContainer.classList.add(`${plant}`);
+    // Add class names for styling and identification
+    cardContainer.classList.add("card-container", `${plant}`);
     card.classList.add("card");
     cardFront.classList.add("card-front");
     cardBack.classList.add("card-back");
 
-    // give card image src attribute
-    cardImg.setAttribute(
-      "src",
-      `./img/memory-game-plant-images-100-times-1_5/${plant}.png`
-    );
+    // Set the image source dynamically
+    cardImg.setAttribute("src", `./img/memory-game-plant-images-100-times-1_5/${plant}.png`);
 
+    // Add text to the front of the card
     cardFront.innerText = "MEMORY";
-    // call a function handleCardClick when a div is clicked on
+
+    // Add event listener for the card click
     cardContainer.addEventListener("click", handleCardClick);
 
-    // append the elements together
+    // Append elements together
     cardBack.append(cardImg);
-    card.append(cardFront);
-    card.append(cardBack);
+    card.append(cardFront, cardBack);
     cardContainer.append(card);
     cardsContainer.append(cardContainer);
-  }
+  });
 }
 
+// Function to handle card flip and matching logic
 function handleCardClick(event) {
-  // ***** PREVENT ILLEGAL CLICKS *****
-  if (!allowClicks) return;
-  if (event.currentTarget.classList.contains("flipped")) return;
+  // Prevent illegal clicks when cards are already flipped or clicks are disabled
+  if (!allowClicks || event.currentTarget.classList.contains("flipped")) return;
 
+  // Increment the score for each card flip
   score.innerHTML = parseInt(score.innerHTML) + 1;
 
-  // save the target card container to a variable and add class "flipped"
+  // Mark the clicked card as flipped
   let clickedCardContainer = event.currentTarget;
   clickedCardContainer.classList.add("flipped");
 
-  // AT LEAST ONE CARD FLIPPED
-  // assign the clicked card to either card1 or card2
+  // Assign the clicked card to card1 or card2 (track two flipped cards)
   if (!card1 || !card2) {
     card1 = card1 || clickedCardContainer;
     card2 = clickedCardContainer === card1 ? null : clickedCardContainer;
   }
 
-  // TWO CARDS FLIPPED
+  // If two cards have been flipped
   if (card1 && card2) {
-    allowClicks = false;
+    allowClicks = false; // Disable clicks temporarily
 
-    // a match
+    // Check if the cards match
     if (card1.className === card2.className) {
-      // leave them flipped
+      // If it's a match, keep them flipped
       cardsFlipped += 2;
-      // remove their event handlers
+
+      // Remove event listeners for matched cards
       card1.removeEventListener("click", handleCardClick);
       card2.removeEventListener("click", handleCardClick);
-      // set card1 and card2 back to null
+
+      // Reset card variables
       card1 = null;
       card2 = null;
-      setTimeout(function () {
-        if (cardsFlipped === PLANTS.length) alert("game over!");
+
+      // Check if all cards are flipped (game over)
+      setTimeout(() => {
+        if (cardsFlipped === PLANTS.length) alert("Game Over!");
       }, 1000);
 
-      // allow clicks
+      // Allow clicks again
       allowClicks = true;
-      // not a match
     } else {
-      // mark
-      setTimeout(function () {
+      // If not a match, flip them back over after a delay
+      setTimeout(() => {
         card1.classList.remove("flipped");
         card2.classList.remove("flipped");
         card1 = null;
         card2 = null;
-        allowClicks = true;
+        allowClicks = true; // Re-enable clicks
       }, 1000);
     }
   }
 }
 
-// when the DOM loads
+// Initialize the game by creating the shuffled cards
 createDivsForPlants(shuffledPlants);
+
+// Collect all card divs (if needed elsewhere)
 let cards = document.querySelectorAll("#game > div");
-let cardsArr = Array.prototype.slice.call(cards);
+let cardsArr = Array.prototype.slice.call(cards); 
