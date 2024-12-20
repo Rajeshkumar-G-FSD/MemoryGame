@@ -1,11 +1,17 @@
 // DOM elements
 const cardsContainer = document.querySelector(".cards-container");
 const score = document.querySelector("#score");
+const timerDisplay = document.createElement("div"); // New element for the timer display
+timerDisplay.classList.add("timer-display"); // Add class for styling
+document.body.insertBefore(timerDisplay, cardsContainer); // Insert timer display above the cards container
 let allowClicks = true; // Control if clicks are allowed
 let card1 = null; // Track first card flipped
 let card2 = null; // Track second card flipped
 score.innerHTML = 0; // Initialize score
 let cardsFlipped = 0; // Track the number of cards flipped
+let wrongAttempts = 0; // Track the number of wrong attempts
+let timer; // Timer variable
+let timeLeft = 15; // Time in seconds for the game
 
 // Array of plant names (duplicates to match pairs)
 const PLANTS = [
@@ -104,27 +110,71 @@ function handleCardClick(event) {
 
       // Check if all cards are flipped (game over)
       setTimeout(() => {
-        if (cardsFlipped === PLANTS.length) alert("Game Over!");
+        if (cardsFlipped === PLANTS.length) {
+          clearInterval(timer); // Stop the timer
+          alert("Game Over! You matched all pairs.");
+        }
       }, 1000);
 
       // Allow clicks again
       allowClicks = true;
     } else {
-      // If not a match, flip them back over after a delay
+      // If not a match, increment wrong attempts and flip them back over after a delay
+      wrongAttempts++;
       setTimeout(() => {
         card1.classList.remove("flipped");
         card2.classList.remove("flipped");
         card1 = null;
         card2 = null;
         allowClicks = true; // Re-enable clicks
+
+        // Check if wrong attempts exceed 6
+        if (wrongAttempts >= 6) {
+          alert("Maximum wrong attempts reached. Resetting game...");
+          resetGame();
+        }
       }, 1000);
     }
   }
 }
 
-// Initialize the game by creating the shuffled cards
-createDivsForPlants(shuffledPlants);
+// Function to reset the game
+function resetGame() {
+  // Reset variables
+  wrongAttempts = 0;
+  cardsFlipped = 0;
+  score.innerHTML = 0;
+  allowClicks = true;
+  card1 = null;
+  card2 = null;
+  timeLeft = 15; // Reset timer
 
-// Collect all card divs (if needed elsewhere)
-let cards = document.querySelectorAll("#game > div");
-let cardsArr = Array.prototype.slice.call(cards); 
+  // Remove all card elements
+  cardsContainer.innerHTML = "";
+
+  // Shuffle the PLANTS array and recreate the cards
+  shuffledPlants = shuffle(PLANTS);
+  createDivsForPlants(shuffledPlants);
+
+  // Restart the timer
+  startTimer();
+}
+
+// Function to start the timer
+function startTimer() {
+  timeLeft = 15;
+  timer = setInterval(() => {
+    timeLeft--;
+    timerDisplay.innerText = `Time left: ${timeLeft}s`; // Update the timer display
+    console.log(`Time left: ${timeLeft}s`);
+    if (timeLeft <= 0) {
+      clearInterval(timer);
+      alert("Time's up! Resetting game...");
+      resetGame();
+    }
+  }, 1000);
+}
+
+// Initialize the game by creating the shuffled cards and starting the timer
+createDivsForPlants(shuffledPlants);
+startTimer();
